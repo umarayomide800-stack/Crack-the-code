@@ -108,7 +108,7 @@ ol{margin:6px 0;padding-left:20px;color:var(--ink);line-height:1.4}li{margin:5px
 const LV=[[3,1,8,0],[3,3,7,0],[3,8,6,0],[4,1,9,1],[4,4,8,1],[4,10,6,1],[5,2,9,1],[5,6,8,1],[5,12,7,1],[5,24,6,1]].map(a=>({n:a[0],k:a[1],m:a[2],p:a[3]}));
 const DIFF={easy:{l:5,h:3},normal:{l:3,h:2},hard:{l:1,h:0}};
 const TH=['vault','neon','light'];
-let S={done:{},total:0,tut:0,theme:'vault',snd:1,diff:'normal',pu:{elim:0,life:0},st:{p:0,w:0,tr:0,best:0,nhs:0},daily:{last:'',streak:0,done:'',max:0},endless:0,vib:1,dh:{},ach:[],top:[],life:0,own:[],skin:'default',twin:0,tips:{},pid:'',name:''};
+let S={done:{},total:0,tut:0,theme:'vault',snd:1,diff:'normal',pu:{elim:0,life:0},st:{p:0,w:0,tr:0,best:0,nhs:0},daily:{last:'',streak:0,done:'',max:0},endless:0,vib:1,dh:{},ach:[],top:[],life:0,own:[],skin:'default',twin:0,tips:{},pid:'',name:'',page:''};
 try{Object.assign(S,JSON.parse(localStorage.getItem('ctc2')||'{}'))}catch(e){}
 S.pu=Object.assign({elim:0,life:0,hint:0,clue:0,shield:0,freeze:0,skip:0},S.pu);if(!S.life)S.life=S.total;if(!S.pid)S.pid=Math.random().toString(36).slice(2,10);if(!S.name)S.name='Player'+(Math.random()*9000+1000|0);
 const save=()=>{try{localStorage.setItem('ctc2',JSON.stringify(S))}catch(e){}};
@@ -119,6 +119,8 @@ const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.i
 const hash=s=>{let h=0;for(const c of s)h=Math.imul(31,h)+c.charCodeAt(0)|0;return h};
 const today=()=>new Date().toLocaleDateString('en-CA'),yday=()=>new Date(Date.now()-864e5).toLocaleDateString('en-CA');
 const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
+// remember current page
+const setPage=n=>{if(S.page!==n){S.page=n;save()}};
 // sound
 let AC;
 function tone(f,d,ty='sine',v=.08,at=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+at;o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
@@ -164,9 +166,9 @@ const rw=r=>r[0]==='pts'?r[1]+' pts':SHOP.find(x=>x[0]===r[1])[1];
 const ACH=[['First win','Win your first level',()=>S.st.w>=1,['pts',100]],['Halfway','Clear level 5',()=>!!S.done[4],['pts',300]],['Level 10','Clear all 10 levels',()=>Object.keys(S.done).length>=10,['pu','skip']],['First 3-star win','Win a level with no wrong tries and no hints',()=>Object.values(S.done).some(d=>d.s===3),['pu','shield']],['Star collector','Earn 20 stars',()=>Object.values(S.done).reduce((a,b)=>a+b.s,0)>=20,['pts',600]],['Speed cracker','Solve a code in 20 seconds or less',()=>S.st.best>0&&S.st.best<=20,['pu','hint']],['Hint-free run','Win 10 in a row without hints',()=>(S.st.nhs||0)>=10,['pu','clue']],['Week streak','Reach a 7-day daily streak',()=>(S.daily.max||0)>=7,['pu','freeze']],['Endless explorer','Reach round 5 in endless mode',()=>S.endless>=5,['pts',800]],['Collector','Earn 5000 points in total',()=>S.life>=5000,['pu','life']],['Hard win','Win a level on Hard',()=>(S.st.hw||0)>=1,['pts',500]]];
 const checkAch=()=>{const n=[];ACH.forEach((a,i)=>{if(!S.ach.includes(i)&&a[2]()){S.ach.push(i);const r=a[3];if(r[0]==='pts')S.total+=r[1];else S.pu[r[1]]++;n.push(a[0]+' (+ '+rw(r)+')')}});return n};
 const LKS='<svg class="lock open" viewBox="0 0 60 70" width="90" aria-hidden="true"><path class="sh" d="M16 30V20a14 14 0 0 1 28 0v10" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><rect x="8" y="30" width="44" height="34" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="3"/><circle cx="30" cy="44" r="5" fill="var(--line)"/><rect x="28" y="46" width="4" height="10" fill="var(--line)"/></svg>';
-function splash(){V='splash';app.className='enter';app.innerHTML=`<div style="text-align:center;padding-top:8vh">${LKS}<h1 class="logo" style="font-size:44px;margin-top:16px">CRACK<br>THE CODE</h1><p>Read the clues. Open the lock.</p><button class="big play" id="go" style="margin-top:36px">TAP TO START</button></div>`;$('go').onclick=()=>S.tut?home():help()}
+function splash(){V='splash';setPage('');app.className='enter';app.innerHTML=`<div style="text-align:center;padding-top:8vh">${LKS}<h1 class="logo" style="font-size:44px;margin-top:16px">CRACK<br>THE CODE</h1><p>Read the clues. Open the lock.</p><button class="big play" id="go" style="margin-top:36px">TAP TO START</button></div>`;$('go').onclick=()=>S.tut?home():help()}
 function home(){
- G=null;V='home';app.className='enter';
+ G=null;V='home';setPage('home');app.className='enter';
  const st=Object.values(S.done).reduce((a,b)=>a+b.s,0),nx=[...Array(10).keys()].find(i=>!S.done[i]),dn=Object.keys(S.done).length;
  app.innerHTML=`<div class="hud"><span class="chip">🪙 ${S.total}</span><span class="chip">⭐ ${st}/30</span><span class="chip">🔥 ${S.daily.streak}</span></div>
  <div class="hero">${LKS}<h1 class="logo">CRACK<br>THE CODE</h1><p>Read the clues. Open the lock.</p></div>
@@ -178,175 +180,21 @@ function home(){
 }
 function levels(){
  const dn=Object.keys(S.done).length,nx=[...Array(10).keys()].find(i=>!S.done[i]),st=Object.values(S.done).reduce((a,b)=>a+b.s,0);
+ setPage('lv');
  page('Levels',`<div class="row"><span class="pill">${st}/30 ★</span><span class="pill">${S.diff}</span></div><div class="levels">${LV.map((c,i)=>{const o=S.done[i],open=i===0||S.done[i-1];return `<button class="lv ${o?'done':open?'cur':'lk'}" ${open?'':'disabled'} data-l="${i}" aria-label="Level ${i+1}">${open?i+1:'🔒'}<small>${o?'★'.repeat(o.s)+'☆'.repeat(3-o.s):open?c.n+' digits':''}</small></button>`}).join('')}</div><button class="big" id="pl">${dn>=10?'Replay level 1':dn?'Continue at level '+(nx+1):'Start level 1'}</button>${S.pu.skip&&nx!==undefined?`<button class="big alt" id="sk">Skip level ${nx+1} ×${S.pu.skip}</button>`:''}`);
  app.querySelectorAll('.lv').forEach(b=>b.onclick=()=>begin('lvl',+b.dataset.l));$('pl').onclick=()=>begin('lvl',dn>=10?0:nx);if($('sk'))$('sk').onclick=()=>{S.done[nx]={s:1,sc:0};S.pu.skip--;save();levels()};
 }
 function daily(){
  const dd=S.daily.done===today(),y=S.dh[yday()];
  const days=[...Array(7)].map((_,i)=>{const s=S.dh[new Date(Date.now()-(6-i)*864e5).toLocaleDateString('en-CA')];return `<div class="d" style="${s?'':'opacity:.35'}">${s||'·'}</div>`}).join('');
+ setPage('dl');
  page('Daily challenge',`<p>One code a day, the same for everyone.</p><h2>Streak ${S.daily.streak} · best ${S.daily.max||0}</h2><div class="digits">${days}</div><p style="margin:6px 0">Stars earned in the last 7 days</p><p>Yesterday: ${y?'★'.repeat(y):'not played'}</p><h2>Next code in <span id="cd"></span></h2><button class="big" id="go" ${dd?'disabled':''}>${dd?'Solved today':"Play today's code"}</button>`);
  $('go').onclick=()=>begin('daily');cdt();
 }
 function endless(m='endless'){
  const ok=Object.keys(S.done).length>=10,tw=m==='twin';
+ setPage('en');
  page(tw?'Twin mode':'Endless mode',`<p>${tw?'4-digit codes where digits can repeat, so 1-1-4 is possible. Clues count a digit as many times as it appears.':'5-digit codes with fewer clues every round.'} A run ends when you are locked out.</p><div class="st"><span>Best round</span><b>${tw?S.twin||0:S.endless}</b></div><button class="big" id="go" ${ok?'':'disabled'}>${ok?'Start a run':'Clear all 10 levels to unlock'}</button>`);
  $('go').onclick=()=>begin(m,1);
 }
-const SHOP=[['hint','Extra hint','Reveals one more digit and its position',300,'pu'],['clue','Extra clue','Adds one more clue to the current level',350,'pu'],['elim','Remove 3 wrong digits','Marks 3 digits that are not in the code as out',400,'pu'],['life','Extra try','Adds one try to a level',500,'pu'],['shield','Star shield','One wrong code will not cost you a star',600,'pu'],['freeze','Streak freeze','Keeps your daily streak if you miss one day',800,'pu'],['skip','Skip level','Skips your next level with 1 star',1500,'pu'],['neon','Neon theme','Purple and magenta look',1000,'th'],['light','Light theme','Bright look',1000,'th'],['gold','Gold padlock','Gold finish',800,'sk'],['steel','Steel padlock','Silver finish',800,'sk'],['lockneon','Neon padlock','Green glow',800,'sk']];
-function applySkin(){const r=document.documentElement;if(S.skin&&S.skin!=='default')r.dataset.skin=S.skin;else delete r.dataset.skin}
-function shop(){
- const y=window.scrollY,T=(id)=>S.theme===id,K=(id)=>S.skin===id;
- const use=(id,on,lb)=>`<div class="st"><span>${lb}</span><button class="sm ${on?'on':''}" data-e="${id}" ${on?'disabled':''}>${on?'In use':'Use'}</button></div>`;
- const row=x=>{const[id,n,d,pr,t]=x,own=t==='pu'?S.pu[id]:S.own.includes(id);
-  if(t!=='pu'&&own)return use(id,(t==='th'?T:K)(id),n);
-  return `<div class="st"><span>${n}${t==='pu'?' ×'+own:''}<br><small style="color:var(--mut)">${d}</small></span><button class="sm" data-b="${id}" ${S.total>=pr?'':'disabled'}>Buy ${pr}</button></div>`};
- const g=t=>SHOP.filter(x=>x[4]===t).map(row).join('');
- page('Shop',`${S.tips.shop?'':'<div class="hbar">Welcome to the shop. Spend the points you earn on help for tough levels, themes and padlocks. Help you buy shows up as buttons inside a level. <button class="sm" id="tsx">Got it</button></div>'}<div class="row"><span class="pill">${S.total} pts to spend</span></div><h2>Help</h2>${g('pu')}<h2>Themes</h2>${use('vault',T('vault'),'Vault theme (free)')}${g('th')}<h2>Padlocks</h2>${use('default',K('default'),'Classic padlock (free)')}${g('sk')}<p style="margin-top:10px">Bought help is used from the buttons inside a level. Hard mode blocks bonus hints and clues.</p>`);
- app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const x=SHOP.find(a=>a[0]===b.dataset.b);if(S.total<x[3])return;S.total-=x[3];if(x[4]==='pu')S.pu[x[0]]++;else{S.own.push(x[0]);if(x[4]==='th'){S.theme=x[0];document.documentElement.dataset.theme=x[0]}else{S.skin=x[0];applySkin()}}save();tone(660,.1);shop()});
- app.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{const id=b.dataset.e;if(['vault','neon','light'].includes(id)){S.theme=id;document.documentElement.dataset.theme=id}else{S.skin=id;applySkin()}save();shop()});
- if($('tsx'))$('tsx').onclick=()=>{S.tips.shop=1;save();shop()};window.scrollTo(0,y);
-}
-function inv(){page('Inventory',SHOP.filter(x=>x[4]==='pu').map(x=>`<div class="st"><span>${x[1]}<br><small style="color:var(--mut)">${x[2]}</small></span><b>×${S.pu[x[0]]}</b></div>`).join('')+`<p style="margin-top:8px">Earn one at random with a 3-star win, or buy more.</p><button class="big" id="go">Open shop</button>`);$('go').onclick=shop}
-function ach(){page('Achievements',ACH.map((a,i)=>`<div class="st"><span>${a[0]}<br><small style="color:var(--mut)">${a[1]} · Reward: ${rw(a[3])}</small></span><b>${S.ach.includes(i)?'✓':'🔒'}</b></div>`).join(''))}
-function settings(){
- page('Settings',`<h2>Difficulty</h2><div class="row">${['easy','normal','hard'].map(d=>`<button class="sm ${S.diff===d?'on':''}" data-df="${d}">${d[0].toUpperCase()+d.slice(1)} (${DIFF[d].l} ${DIFF[d].l>1?'tries':'try'})</button>`).join('')}</div><h2>Sound and look</h2><div class="row"><button class="sm" id="sn">Sound ${S.snd?'on':'off'}</button><button class="sm" id="vb">Vibration ${S.vib?'on':'off'}</button><button class="sm" id="th">Theme: ${S.theme}</button></div><h2>Player name</h2><input id="nm2" maxlength="14" value="${esc(S.name)}" aria-label="Player name"><button class="big alt" id="rs">Reset all progress</button><h2>About</h2><p>Crack the Code is a logic game: use the clues to work out the lock's secret digits. Made with Claude.</p>`);
- app.querySelectorAll('[data-df]').forEach(b=>b.onclick=()=>{S.diff=b.dataset.df;save();settings()});
- $('sn').onclick=()=>{S.snd=+!S.snd;save();tone(660,.1);settings()};
- $('vb').onclick=()=>{S.vib=+!S.vib;save();vib(60);settings()};
- $('th').onclick=()=>{{const a=TH.filter(t=>t==='vault'||S.own.includes(t));S.theme=a[(a.indexOf(S.theme)+1)%a.length]}document.documentElement.dataset.theme=S.theme;save();settings()};
- $('nm2').onchange=e=>{S.name=e.target.value.trim().slice(0,14)||S.name;save()};
- $('rs').onclick=()=>ask('Reset all progress? Levels, stars, scores and streaks are erased.',()=>{Object.assign(S,{done:{},total:0,life:0,own:[],skin:'default',theme:'vault',pu:{elim:0,life:0,hint:0,clue:0,shield:0,freeze:0,skip:0},st:{p:0,w:0,tr:0,best:0,nhs:0},daily:{last:'',streak:0,done:'',max:0},endless:0,dh:{},ach:[],top:[]});document.documentElement.dataset.theme='vault';applySkin();save();home()});
-}
-function ask(m,y,n=settings){V='ask';app.innerHTML=`<h1>Are you sure?</h1><p style="margin:8px 0">${m}</p><button class="big" id="y">Yes</button><button class="big alt" id="n">Cancel</button>`;$('y').onclick=y;$('n').onclick=n}
-function pause(){
- const g=G;g.ps=g.ps||Date.now();V='pause';
- app.innerHTML=`<h1>Paused</h1><p style="margin:6px 0">The timer is stopped.</p><button class="big" id="rs">Resume</button><button class="big alt" id="rt">Restart</button><button class="big alt" id="sn">Sound ${S.snd?'on':'off'}</button><button class="big alt" id="qt">Quit</button>`;
- $('rs').onclick=()=>{g.t0+=Date.now()-g.ps;g.ps=0;V='game';draw()};
- $('rt').onclick=()=>ask('Restart with a new code? Your time resets.',()=>begin(g.mode,g.L),pause);
- $('sn').onclick=()=>{S.snd=+!S.snd;save();pause()};
- $('qt').onclick=()=>ask('Quit this game? Progress on this code is lost.',()=>g.mode==='lvl'?levels():home(),pause);
-}
-function result(){
- const g=G,b=g.bd,r=(a,v)=>`<div class="st"><span>${a}</span><b>${v}</b></div>`;V='result';app.className='enter';
- app.innerHTML=`<h1 style="text-align:center">${lbl(g)} cleared</h1><div class="stars">${[0,1,2].map(i=>`<span class="pop" style="animation-delay:${i*.3}s;${i<g.stars?'':'opacity:.25'}">★</span>`).join('')}</div>${r('Base score',b.base)}${r('Time bonus ('+fmt(g.el)+')','+'+b.time)}${r('Hint penalty','-'+b.hint)}${r('Total',g.sc)}${g.fz?'<p style="margin-top:8px;color:var(--ok)">Streak freeze protected your streak</p>':''}${g.pu?`<p style="margin-top:8px;color:var(--ok)">${g.pu}</p>`:''}${(g.an||[]).map(n=>`<p style="color:var(--warn)">Achievement unlocked: ${n}</p>`).join('')}${g.tx?`<pre>${g.tx}</pre>`:''}<button class="big" id="nx">${g.mode==='lvl'&&g.L<9?'Next level':rd(g)?'Next round':'Continue'}</button><button class="big alt" id="sh">Share result</button><button class="big alt" id="hm">${g.mode==='lvl'?'Levels':'Home'}</button>`;
- $('nx').onclick=()=>g.mode==='lvl'?(g.L<9?begin('lvl',g.L+1):levels()):rd(g)?begin(g.mode,g.L+1):home();
- $('sh').onclick=share;[...Array(g.stars)].forEach((_,i)=>tone(660+i*110,.2,'triangle',.06,.25*i+.3));if((g.an||[]).length)tone(1200,.3,'triangle',.06,1.1);$('hm').onclick=()=>g.mode==='lvl'?levels():home();
-}
-function over(){
- const g=G;V='over';app.className='enter';
- app.innerHTML=`<h1>Locked out</h1><p style="margin:6px 0">The code was</p><div class="slots">${[...g.secret].map(d=>`<div class="slot">${d}</div>`).join('')}</div>${rd(g)?`<p style="text-align:center">Run ended at round ${g.L}. Best round: ${g.mode==='twin'?S.twin:S.endless}</p>`:''}<button class="big" id="rt">${rd(g)?'Start a new run':'Try again'}</button><button class="big alt" id="cn" ${S.pu.life?'':'disabled'}>Use an extra try to continue ×${S.pu.life}</button><button class="big alt" id="hm">${g.mode==='lvl'?'Levels':'Home'}</button>`;
- $('rt').onclick=()=>begin(g.mode,rd(g)?1:g.L);
- $('cn').onclick=()=>{S.pu.life--;save();g.lost=0;g.lives=1;g.msg='Extra try used';g.t0=Date.now()-g.el*1000;draw()};
- $('hm').onclick=()=>g.mode==='lvl'?levels():home();
-}
-const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let DB=null;const dk=()=>'daily'+today().replace(/-/g,'');
-try{window.claude&&claude.use('db').then(d=>{DB=d}).catch(()=>{})}catch(e){}
-function post(g){if(!DB)return;try{DB.doc('best/'+S.pid).set({n:S.name,life:S.life}).catch(()=>{});if(g.mode==='daily')DB.doc(dk()+'/'+S.pid).set({n:S.name,sc:g.sc,t:g.el}).catch(()=>{})}catch(e){}}
-async function board(tab='day'){
- page('Leaderboard',`<div class="row"><button class="sm ${tab==='day'?'on':''}" id="t1">Today's daily</button><button class="sm ${tab==='all'?'on':''}" id="t2">All-time</button></div><div id="lb" style="margin-top:10px"><p>Loading…</p></div><p style="margin-top:10px">You play as ${esc(S.name)}. Change your name in Settings.</p>`);
- $('t1').onclick=()=>board('day');$('t2').onclick=()=>board('all');
- if(!DB){$('lb').innerHTML='<p>The online leaderboard is not available for this viewer. Your scores are still saved on this device.</p>';return}
- try{
-  const q=tab==='day'?DB.collection(dk()).orderBy('sc','desc').limit(10):DB.collection('best').orderBy('life','desc').limit(10);
-  const r=await q.get(),el=$('lb');if(V!=='page'||!el)return;
-  el.innerHTML=r.empty?'<p>No scores yet. Be the first!</p>':r.docs.map((d,i)=>{const x=d.data();return `<div class="st"><span>${i+1}. ${esc(x.n)}${d.id===S.pid?' (you)':''}</span><b>${tab==='day'?x.sc:x.life}</b></div>`}).join('');
- }catch(e){const el=$('lb');if(el)el.innerHTML='<p>Could not load scores. Try again later.</p>'}
-}
-function stats(){
- const s=S.st,r=(a,b)=>`<div class="st"><span>${a}</span><b>${b}</b></div>`;
- app.innerHTML=`<div class="bar"><h1>Stats</h1><button class="sm" id="bk">Back</button></div>`+
- r('Levels cleared',Object.keys(S.done).length+'/10')+r('Lifetime score',S.life)+r('Games won / played',s.w+' / '+s.p)+
- r('Average tries per win',s.w?(s.tr/s.w).toFixed(1):'-')+r('Fastest solve',s.best?fmt(s.best):'-')+r('Daily streak',S.daily.streak)+r('Endless best round',S.endless)+'<h2>Top scores</h2>'+(S.top.map(t=>r(t.l,t.sc)).join('')||'<p>No wins yet</p>');
- $('bk').onclick=home;
-}
-function help(){
- S.tut=1;save();
- const cl=[['682','1 correct and well placed'],['614','1 correct but wrong placed'],['206','2 correct but wrong placed'],['738','Nothing is correct'],['780','1 correct but wrong placed']];
- app.innerHTML=`<div class="bar"><h1>How to play</h1></div><p>Find the secret code from the clues. Digits never repeat in a code, except in Twin mode. Practice on this one:</p>
- <div class="clues">${cl.map(c=>`<div class="clue"><div class="digits">${[...c[0]].map(d=>`<div class="d">${d}</div>`).join('')}</div><span class="t">${c[1]}</span></div>`).join('')}</div>
- <ol><li>738: nothing is correct, so 7, 3 and 8 are out.</li><li>780: with 7 and 8 out, the 0 is in the code but not last.</li><li>206: 0 isn't in the middle either, so 0 goes first.</li><li>682: exactly one is well placed. 6 can't be first (0 is), so 2 goes last.</li><li>614: 6 is out, and 1 in the middle would be well placed, so 4 goes in the middle. The code is <b>042</b>.</li></ol>
- <h2>Tips</h2><ol><li>Notes mode marks each digit as maybe, out or sure.</li><li>3 stars needs no wrong tries and no hints, and earns a power-up.</li><li>Some clues say how many digits are even.</li></ol>
- <button class="big" id="bk">Got it</button>`;
- $('bk').onclick=home;
-}
-function begin(mode,L){
- const d=DIFF[S.diff];let c;
- if(mode==='lvl')c=LV[L];
- else if(mode==='daily'){R=mul(hash(today()));c={n:4,k:6,m:7,p:1}}
- else if(mode==='twin'){const e=L-1;c={n:4,k:Math.min(20,6+e*2),m:Math.max(6,10-(e/3|0)),p:1,rep:1}}
- else{const e=L-1;c={n:5,k:Math.min(30,12+e*2),m:Math.max(4,7-(e/3|0)),p:1}}
- const g=make(c);R=Math.random;
- G=Object.assign(g,{mode,L,guess:'',lives:d.l,max:d.l,wr:0,hmax:d.h,hist:[],last:null,hints:[],order:shuffle([...Array(g.n).keys()]),notes:Array(10).fill(0),nm:0,ps:0,t0:Date.now(),el:0,msg:'',won:0,lost:0,pu:'',tx:''});
- draw();
-}
-function draw(){
- const g=G,done=g.won||g.lost;V='game';app.className='';
- const sh=!done&&g.last&&!g.guess.length;
- const slots=Array.from({length:g.n},(_,i)=>`<div class="slot ${sh?(S.diff==='easy'?g.last.m[i]:'r'):(i===g.guess.length&&!done?'on':'')}">${done?g.secret[i]:sh?g.last.g[i]:(g.guess[i]||'')}</div>`).join('');
- const keys=[...'1234567890'].map(d=>`<button class="k ${g.notes[d]?'n'+g.notes[d]:''}" data-d="${d}">${d}</button>`).join('');
- const lb=lbl(g);
- let end='';
- if(g.won||g.lost)end='';
- else end=`<div class="pad">${keys}<button class="k w ${g.nm?'on':''}" id="nm">Notes ${g.nm?'on':'off'}</button><button class="k w" id="del">Delete</button><button class="k go" id="ok" style="grid-column:span 1">Go</button></div>
- <div class="row" style="margin-top:8px;justify-content:center"><button class="sm" id="pe" ${S.pu.elim?'':'disabled'}>Remove 3 wrong digits ×${S.pu.elim}</button><button class="sm" id="pl2" ${S.pu.life?'':'disabled'}>Extra try ×${S.pu.life}</button><button class="sm" id="ph" ${S.diff!=='hard'&&S.pu.hint&&g.hints.length<g.n?'':'disabled'}>Bonus hint ×${S.pu.hint}</button><button class="sm" id="pc" ${S.diff!=='hard'&&S.pu.clue?'':'disabled'}>Extra clue ×${S.pu.clue}</button><button class="sm" id="ps" ${S.pu.shield&&!g.sh?'':'disabled'}>${g.sh?'Shield on':'Star shield ×'+S.pu.shield}</button></div>`;
- app.innerHTML=`<div class="bar hudbar"><button class="sm" id="back">${done?'Menu':'Pause'}</button><div class="row"><span class="pill">${lb}</span><span class="pill">⏱ <span id="tm">${fmt(done?g.el:(Date.now()-g.t0)/1000|0)}</span></span><button class="sm hb" id="hint" ${done||g.hints.length>=g.hmax?'disabled':''}>${g.hmax?'Hint '+(g.hmax-g.hints.length):'No hints'}</button><span class="pill">${'❤️'.repeat(g.lives)}${'🖤'.repeat(Math.max(0,g.max-g.lives))}</span></div></div>
- <svg class="lock ${g.won?'open':''}" id="lk" viewBox="0 0 60 70" width="46" aria-hidden="true"><path class="sh" d="M16 30V20a14 14 0 0 1 28 0v10" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><rect x="8" y="30" width="44" height="34" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="3"/><circle cx="30" cy="44" r="5" fill="var(--line)"/><rect x="28" y="46" width="4" height="10" fill="var(--line)"/></svg>
- <div class="clues">${g.clues.map(clueHTML).join('')}</div>
- ${g.hints.length?`<div class="hbar">${g.hints.map(i=>`Digit ${i+1} is <b>${g.secret[i]}</b>`).join(' · ')}</div>`:''}
- <div class="slots" id="slots">${slots}</div><div class="msg" style="color:${g.won?'var(--ok)':'var(--bad)'}">${g.msg}</div>${!S.tips.pu&&!g.won&&!g.lost&&Object.values(S.pu).some(v=>v)?'<div class="hbar">Tip: the items you own appear as buttons under the keypad. Tap one to use it. <button class="sm" id="tpx">Got it</button></div>':''}${end}${S.diff!=='hard'&&g.hist.length?`<h2>Your tries</h2><div class="clues">${g.hist.map(clueHTML).join('')}</div>`:''}`;
- $('back').onclick=done?()=>g.mode==='lvl'?levels():home():pause;
- $('hint').onclick=()=>{if(g.hints.length<g.hmax&&!done){g.hints.push(g.order[g.hints.length]);tone(880,.12);draw()}};
- app.querySelectorAll('.k[data-d]').forEach(b=>b.onclick=()=>press(b.dataset.d));
- const b=(id,f)=>{if($(id))$(id).onclick=f};
- b('del',()=>{g.guess=g.guess.slice(0,-1);g.msg='';draw()});b('ok',submit);b('nm',()=>{g.nm=+!g.nm;draw()});
- b('nx',()=>g.mode==='lvl'?(g.L<9?begin('lvl',g.L+1):home()):g.mode==='endless'?begin('endless'):home());
- b('rt',()=>begin(g.mode,g.L));b('sh',share);
- b('pe',()=>{const pool=shuffle([...'0123456789'].filter(d=>!g.secret.includes(d)&&g.notes[d]!==2));pool.slice(0,3).forEach(d=>g.notes[d]=2);S.pu.elim--;save();tone(760,.15);draw()});
- b('pl2',()=>{g.lives++;S.pu.life--;save();tone(760,.15);draw()});
- b('ph',()=>{g.hints.push(g.order[g.hints.length]);S.pu.hint--;save();tone(880,.12);draw()});
- b('pc',()=>{let c,t=0;do{const gs=rnd(g.n,g.rep),f=fb(g.secret,gs);c={g:gs,w:f[0],m:f[1]}}while(!(c.w+c.m)&&++t<12);g.clues.push(c);S.pu.clue--;save();tone(880,.12);draw()});
- b('ps',()=>{g.sh=1;S.pu.shield--;save();tone(760,.15);draw()});b('tpx',()=>{S.tips.pu=1;save();draw()});
-}
-let V='home';
-function press(d){
- const g=G;if(g.won||g.lost)return;
- if(g.nm){g.notes[d]=(g.notes[d]+1)%4;tone(500,.04);draw();return}
- if(g.guess.length>=g.n)return;
- if(!g.rep&&g.guess.includes(d)){g.msg='Digits do not repeat';draw();return}
- g.last=null;g.guess+=d;g.msg='';tone(700,.05,'square',.03);draw();
-}
-function submit(){
- const g=G;if(g.won||g.lost)return;
- if(g.guess.length<g.n){g.msg=`Enter ${g.n} digits`;draw();return}
- if(g.guess===g.secret){
-  g.won=1;g.el=(Date.now()-g.t0)/1000|0;
-  const h=g.hints.length;g.stars=(!g.wr&&!h)?3:(g.wr<=1&&h<=1)?2:1;
-  g.bd={base:500+200*g.stars,time:Math.max(0,300-g.el*3),hint:100*h};g.sc=Math.max(100,g.bd.base+g.bd.time-g.bd.hint);
-  const s=S.st;s.p++;s.w++;s.tr+=g.wr+1;s.nhs=h?0:(s.nhs||0)+1;if(S.diff==='hard')s.hw=(s.hw||0)+1;if(!s.best||g.el<s.best)s.best=g.el;
-  if(g.mode==='lvl'){const p=S.done[g.L],ps=p?p.sc:0;if(g.sc>ps){S.total+=g.sc-ps;S.life+=g.sc-ps;S.done[g.L]={s:Math.max(g.stars,p?p.s:0),sc:g.sc}}else if(g.stars>p.s)p.s=g.stars}
-  else{S.total+=g.sc;S.life+=g.sc;if(g.mode==='endless')S.endless=Math.max(S.endless,g.L);else if(g.mode==='twin')S.twin=Math.max(S.twin||0,g.L);else if(S.daily.done!==today()){S.dh[today()]=g.stars;if(S.daily.last===yday())S.daily.streak++;else if(S.daily.last===new Date(Date.now()-2*864e5).toLocaleDateString('en-CA')&&S.pu.freeze>0){S.pu.freeze--;S.daily.streak++;g.fz=1}else S.daily.streak=1;S.daily.last=S.daily.done=today();S.daily.max=Math.max(S.daily.max||0,S.daily.streak)}}
-  if(g.stars===3){const k=Math.random()<.5?'elim':'life';S.pu[k]++;g.pu='Power-up earned: '+(k==='elim'?'remove 3 wrong digits':'extra try')}
-  S.top.push({sc:g.sc,l:lbl(g)});S.top.sort((a,b)=>b.sc-a.sc);S.top=S.top.slice(0,5);g.an=checkAch();save();post(g);g.msg='Unlocked!';tone(523,.25,'triangle');tone(659,.25,'triangle',.08,.1);tone(784,.25,'triangle',.08,.2);tone(1047,.4,'triangle',.08,.3);vib([40,40,80]);draw();{const gg=g;setTimeout(()=>{if(G===gg&&V==='game')result()},1200)}return;
- }
- const f=fb(g.secret,g.guess);g.hist.push({g:g.guess,w:f[0],m:f[1]});g.last={g:g.guess,m:marks(g.secret,g.guess)};if(g.sh)g.sh=0;else g.wr++;g.lives--;g.guess='';tone(140,.3,'sawtooth',.07);vib(150);
- if(g.lives<=0){g.lost=1;g.el=(Date.now()-g.t0)/1000|0;S.st.p++;S.st.nhs=0;save();g.msg='Locked out. The code was '+g.secret}
- else g.msg='Wrong code'+(S.diff==='hard'?'':' · '+clueText({w:f[0],m:f[1]}))+' · '+g.lives+(g.lives===1?' try left':' tries left');
- draw();$('slots').classList.add('shake','flash');if(g.lost){const gg=g;setTimeout(()=>{if(G===gg&&V==='game'&&g.lost)over()},1400)}$('lk').classList.add('shake');
-}
-function share(){
- const g=G,lb=lbl(g);
- g.tx=`🔐 Crack the Code · ${lb}\n${'⭐'.repeat(g.stars)}${'☆'.repeat(3-g.stars)} ${g.wr?'❌'.repeat(g.wr):'✅'}\n⏱ ${g.el}s · ${g.sc} pts`;
- try{Promise.resolve(navigator.share?navigator.share({text:g.tx}):navigator.clipboard.writeText(g.tx)).catch(()=>{})}catch(e){}
- result();
-}
-setInterval(()=>{cdt();if(G&&!G.won&&!G.lost&&$('tm'))$('tm').textContent=fmt((Date.now()-G.t0)/1000|0)},1000);
-document.addEventListener('keydown',e=>{
- if(!G||V!=='game'||G.won||G.lost)return;
- if(/^[0-9]$/.test(e.key))press(e.key);
- else if(e.key==='Backspace'){G.guess=G.guess.slice(0,-1);G.msg='';draw()}
- else if(e.key==='Enter')submit();
-});
-document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))tone(520,.04,'square',.02)});
-splash();
-</script></body></html>
+const SHOP=[['hint','Extra hint','Reveals one more digit and its position',300,'pu'],['clue','Extra clue','Adds one more clue to the current level',350,'pu'],['elim','Remove 3 wrong digits','Marks 3 digits that are not in the code as out',400,'pu'],['life','Extra try','Adds one
